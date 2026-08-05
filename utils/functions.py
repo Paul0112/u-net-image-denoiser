@@ -10,13 +10,13 @@ def download_stamp(oid, client, output_dir, to_delete):
     """
     Download a stamp from the ALeRCE cliente based on the 
     oid provided. If the oid provided present a exception, 
-    it's saved in a 'to_delete' list to delete it on the dataset
+    it's saved in a 'to_delete' list to delete it from the dataset
 
     """
     file_path = os.path.join(output_dir, f"{oid}_stamps.fits")
 
     if os.path.exists(file_path):
-        return True  # Ya estaba descargado
+        return True 
 
     try:
         stamps = client.get_stamps(oid)

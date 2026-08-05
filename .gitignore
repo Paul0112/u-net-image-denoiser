@@ -1,2 +1,4 @@
 data/stamps/
+data/gaussian_noise/
+data/gaussian_noisy/
 utils/__pycache__
