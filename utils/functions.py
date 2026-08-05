@@ -25,7 +25,6 @@ def download_stamp(oid, client, output_dir, to_delete):
         return True
 
     except:
-
         to_delete.append(oid) 
         return False
 
@@ -86,3 +85,23 @@ def clean_labels(labels, to_delete, output_dir):
 
     labels_cleaned = labels[~labels['oid'].isin(to_delete)].reset_index(drop=True)
     return labels_cleaned
+
+
+
+def plot_training_history(train_loss_history, val_loss_history):
+    """
+    Helper function for ploting the loss between validation and training set 
+    """
+    plt.figure(figsize=(12, 5))
+
+    # LOSS
+    plt.plot(train_loss_history, label='Train Loss')
+    plt.plot(val_loss_history, label='Validation Loss')
+    plt.title('Learning curve')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+
+    plt.legend()
+    plt.tight_layout()
+    plt.grid(True)
+    plt.show()
