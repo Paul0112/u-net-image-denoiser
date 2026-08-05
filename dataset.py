@@ -1,9 +1,11 @@
 import os
 import pandas as pd
+import numpy as np
 from pathlib import Path
 import torch
 from torch.utils.data import Dataset
-from astropy import fits
+from astropy.io import fits
+
 
 # Define dataset class to read .fits dataset
 class StampsDataset(Dataset):
@@ -16,8 +18,8 @@ class StampsDataset(Dataset):
         return len(self.img_clean)
 
     def __getitem__(self, idx):
-        clean_path = self.clean_files[idx]
-        noisy_path = self.noisy_files[idx]
+        clean_path = self.img_clean[idx]
+        noisy_path = self.img_noisy[idx]
 
         # Open .fits an extract only science image
         hdu_clean = fits.open(clean_path)
@@ -28,6 +30,10 @@ class StampsDataset(Dataset):
         # reshpe (63, 63) to (1, 63, 63)
         clean_img = np.expand_dims(science_clean, axis=0)
         noisy_img = np.expand_dims(science_noisy, axis=0)
+
+        # fix error in tensor
+        clean_img = clean_img.astype(np.float32)
+        noisy_img = noisy_img.astype(np.float32)
 
         clean_tensor = torch.from_numpy(clean_img)
         noisy_tensor = torch.from_numpy(noisy_img)
