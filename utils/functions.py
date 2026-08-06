@@ -4,6 +4,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
+from pathlib import Path
 
 
 def download_stamp(oid, client, output_dir, to_delete):
@@ -63,28 +64,44 @@ def visual_fits(path):
     hdu.close()
 
 
-def clean_labels(labels, to_delete, output_dir):
+def clean_stamps(to_delete, output_dir):
     '''
     """
     Helper function that continues the corrupted
     OID filtering process started during the
     download. It appends to `to_delete` any
     entries whose stamps do not have the expected
-    shape (63, 63, 3) and returns the labels.
+    shape (63, 63, 3).
     '''
-    for idx, row in labels.iterrows():
-        oid = row['oid']
-        label = row['label']
+    to_delete = []
+    clean_list = list(Path(output_dir).iterdir())
+    len_clean = len(clean_list)
 
-        if oid not in to_delete:
-            hdu = fits.open(os.path.join(output_dir, f"{oid}_stamps.fits"))
-            stamp = np.stack([hdu[0].data, hdu[1].data, hdu[2].data], axis=-1)
+    for stp in range(len_clean):
+        stamp_path = clean_list[stp]
+        hdu = fits.open(stamp_path)
+        stamp = np.stack([hdu[0].data, hdu[1].data, hdu[2].data], axis=-1)
 
-            if stamp.shape != (63,63,3):
-                to_delete.append(oid)
+        if stamp.shape != (63,63,3):
+            to_delete.append(stamp_path)
+            hdu.close()
 
-    labels_cleaned = labels[~labels['oid'].isin(to_delete)].reset_index(drop=True)
-    return labels_cleaned
+    for stamp_path in to_delete:
+        os.remove(stamp_path)
+
+
+def normalize_pair(noisy, clean):
+    """
+    Apply L_2 normalization of clean stamps
+    to both noisy and clean images
+    """
+    clean = np.nan_to_num(clean.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
+    noisy = np.nan_to_num(noisy.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
+
+    norm = np.linalg.norm(clean)
+    norm = norm if norm != 0 else 1
+
+    return noisy / norm, clean / norm
 
 
 
