@@ -8,19 +8,22 @@ from engine import train, test
 from unet.u_net_model import U_net 
 from utils.functions import plot_training_history
 
-BATCH_SIZE = 32
-EPOCHS = 30
+BATCH_SIZE = 16
+EPOCHS = 10
 LEARNING_RATE = 1e-3
 MODEL_DIR = "../unet/"
 CLEAN_DIR = "../data/stamps"   
 NOISY_DIR = "../data/gaussian_noise" 
+IN_CHANNELS = 1
+OUT_CHANNELS = 1
+NUM_LAYERS = 2
 
 def main():
     device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
     print(f"Using {device} device")
 
     # load dataset and split into training and testing 
-    dataset = StampsDataset(clean_dir=CLEAN_DIR, noisy_dir=NOISY_DIR)
+    dataset = StampsDataset(path_noisy=NOISY_DIR, path_clean=CLEAN_DIR)
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
@@ -30,7 +33,7 @@ def main():
     val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     # load model 
-    model = U_net().to(device)
+    model = U_net(in_channels= IN_CHANNELS, out_channels= OUT_CHANNELS, num_levels= NUM_LAYERS).to(device)
     loss_fn = nn.MSELoss() # future testing with MAE instead of MSE
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
@@ -49,10 +52,10 @@ def main():
         val_loss_history.append(v_loss)
 
     # save model learned
-    save_path = f"{MODEL_DIR}/unet_denoising_pesos.pth"
+    save_path = f"{MODEL_DIR}/unet_denoising_weights.pth"
     torch.save(model.state_dict(), save_path)
     print(f"Saved PyTorch Model State to {save_path}")
-    
+
     plot_training_history(train_loss_history, val_loss_history)
 
 if __name__ == "__main__":
