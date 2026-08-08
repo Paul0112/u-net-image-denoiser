@@ -3,7 +3,7 @@ from unet.u_net_utils import *
 # Implementation of U_net with the architecture defined in utils
 
 class U_net(nn.Module):
-    def __init__(self, in_channels, out_channels, num_levels):
+    def __init__(self, in_channels, out_channels, num_levels, base_filters):
         super().__init__()
 
         self.map_features_list = []
@@ -11,7 +11,7 @@ class U_net(nn.Module):
         self.decoders = nn.ModuleList()
 
         curr_in = in_channels
-        curr_out = out_channels
+        curr_out = base_filters
 
         # Instance the encoders levels
         for _ in range(num_levels):
@@ -30,7 +30,7 @@ class U_net(nn.Module):
             curr_out = curr_in
             curr_in = curr_in // 2
 
-        self.output_layer = nn.Conv2d(out_channels, 1, kernel_size=1)
+        self.output_layer = nn.Conv2d(curr_out, out_channels, kernel_size=1)
 
 
     def forward(self, x):

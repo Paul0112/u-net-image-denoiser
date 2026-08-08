@@ -9,7 +9,7 @@ from unet.u_net_model import U_net
 from utils.functions import plot_training_history
 
 BATCH_SIZE = 16
-EPOCHS = 10
+EPOCHS = 8
 LEARNING_RATE = 1e-3
 MODEL_DIR = "../unet/"
 CLEAN_DIR = "../data/stamps"   
@@ -33,7 +33,7 @@ def main():
     val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     # load model 
-    model = U_net(in_channels= IN_CHANNELS, out_channels= OUT_CHANNELS, num_levels= NUM_LAYERS).to(device)
+    model = U_net(in_channels= IN_CHANNELS, out_channels= OUT_CHANNELS, num_levels= NUM_LAYERS, base_filters= 32).to(device)
     loss_fn = nn.MSELoss() # future testing with MAE instead of MSE
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
